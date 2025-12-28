@@ -10,7 +10,7 @@ import { fa } from 'vuetify/iconsets/fa'
 const nonEncryptedTheme: ThemeDefinition = {
   dark: true,
   colors: {
-    fhenix: "#7686D7",
+    luxfhe: "#7686D7",
     background: '#FFFFFF',
     surface: '#FFFFFF',
     primary: "#7686D7",
@@ -28,7 +28,7 @@ const nonEncryptedTheme: ThemeDefinition = {
 const encryptedTheme: ThemeDefinition = {
   dark: true,
   colors: {
-    fhenix: "#E79A4D",
+    luxfhe: "#E79A4D",
     background: '#FFFFFF',
     surface: '#FFFFFF',
     primary: "#E79A4D",

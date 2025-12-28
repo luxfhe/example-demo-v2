@@ -1,5 +1,5 @@
 import appConfig from "../config/appConfig.json";
-import { getPermit } from "fhenixjs";
+import { getPermit } from "luxfhejs";
 import { defineComponent } from 'vue';
 import CommonProps from '@/mixins/CommonProps'
 import { ethers } from "ethers";

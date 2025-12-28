@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue';
-import { FhenixClient } from "fhenixjs";
+import { LuxFHEClient } from "luxfhejs";
 import { ethers } from "ethers";
 
 
@@ -8,7 +8,7 @@ export default defineComponent({
   },
   data() {
     return {
-      fheClient: null as FhenixClient | null,
+      fheClient: null as LuxFHEClient | null,
       activeContract: null as ethers.Contract | null,
 
     }

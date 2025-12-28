@@ -14,7 +14,7 @@ import appConfig from '../config/appConfig.json'
 import encryptionOn from '../assets/lottie/encryption-on.json'
 import audioFile from '~/assets/audio/encryption-on.mp3'
 
-import { FhenixClient, getPermit } from "fhenixjs";
+import { LuxFHEClient, getPermit } from "luxfhejs";
 
 
 // They should be non-reactive variables
@@ -62,7 +62,7 @@ export default defineComponent({
     ];
     
     return {
-      mmDeepLink: "https://demo.fhenix.zone",
+      mmDeepLink: "https://demo.luxfhe.zone",
       enableEncryption: false,
       encryptionOn: encryptionOn,
       showEncryptionAnimation: false,
@@ -210,7 +210,7 @@ export default defineComponent({
         } catch (err) {
           console.log({
             chainId: chainId,
-            chainName: 'Fhenix Network New',
+            chainName: 'LuxFHE Network New',
             rpcUrls: [appConfig.RPC_DEFAULT_ENDPOINT],
             nativeCurrency: {
               name: "FHE Token",
@@ -224,7 +224,7 @@ export default defineComponent({
             params: [
             {
                 chainId: chainId,
-                chainName: 'Fhenix Network New',
+                chainName: 'LuxFHE Network New',
                 rpcUrls: [appConfig.RPC_DEFAULT_ENDPOINT],
                 nativeCurrency: {
                   name: "FHE Token",
@@ -238,7 +238,7 @@ export default defineComponent({
         }
         browserProvider = new ethers.BrowserProvider(window.ethereum!)
         web3Signer = await browserProvider.getSigner();
-        this.fheClient = new FhenixClient({ provider: browserProvider });
+        this.fheClient = new LuxFHEClient({ provider: browserProvider });
         window.ethereum.on('accountsChanged', async (accounts: any) => {
           console.log("accountsChanged");
           this.account = accounts[0];
