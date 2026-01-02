@@ -14,7 +14,7 @@ import appConfig from '../config/appConfig.json'
 import encryptionOn from '../assets/lottie/encryption-on.json'
 import audioFile from '~/assets/audio/encryption-on.mp3'
 
-import { LuxFHEClient, getPermit } from "luxfhejs";
+import { fhe, Encryptable } from "@luxfhe/sdk/web";
 
 
 // They should be non-reactive variables
@@ -238,7 +238,17 @@ export default defineComponent({
         }
         browserProvider = new ethers.BrowserProvider(window.ethereum!)
         web3Signer = await browserProvider.getSigner();
-        this.fheClient = new LuxFHEClient({ provider: browserProvider });
+
+        // Initialize FHE SDK with ethers provider
+        const initResult = await fhe.initializeWithEthers({
+          provider: browserProvider,
+          signer: web3Signer,
+        });
+        if (initResult.success) {
+          this.fhePermit = initResult.data ?? null;
+          this.fheInitialized = true;
+        }
+
         window.ethereum.on('accountsChanged', async (accounts: any) => {
           console.log("accountsChanged");
           this.account = accounts[0];
@@ -288,27 +298,27 @@ export default defineComponent({
 
 
     async mintToken(amount: number) {
-      if (this.activeContract !== null && this.fheClient) {
+      if (this.activeContract !== null && this.fheInitialized) {
         this.minting = true;
         try {
           var tx = null as ethers.TransactionResponse | null;
           if (this.enableEncryption) {
             this.info = "Minting; Encrypting amount...";
             console.log("Encrypting...");
-            let mintAmount = (await this.fheClient.encrypt_uint32(amount)).data;
-            console.log("=== mintAmount ===")
-            console.log(typeof mintAmount);
-            console.log(mintAmount);
-            console.log("=== mintAmount ===")
-            this.info = "Minting; Sending transaction...";
-            
-            const inEuint32Amount = {
-              data: `0x${Array.from(mintAmount).map(b => b.toString(16).padStart(2, '0')).join('')}`
+
+            // Use new SDK encryptInputs API
+            const encryptResult = await fhe.encryptInputs([Encryptable.uint32(amount)]).encrypt();
+            if (!encryptResult.success) {
+              throw new Error("Encryption failed");
             }
-            console.log("--- inEuint32Amount ---")
-            console.log(inEuint32Amount);
-            console.log("--- inEuint32Amount ---")
-            tx = await this.activeContract.mintEncrypted(inEuint32Amount);
+            const [encryptedAmount] = encryptResult.data;
+
+            console.log("=== encryptedAmount ===")
+            console.log(encryptedAmount);
+            console.log("=== encryptedAmount ===")
+            this.info = "Minting; Sending transaction...";
+
+            tx = await this.activeContract.mintEncrypted(encryptedAmount);
           } else {
             this.info = "Minting; Sending transaction...";
             tx = await this.activeContract.mint(amount);
@@ -441,23 +451,27 @@ export default defineComponent({
         return;
       }
       
-      if (this.activeContract !== null && this.fheClient) {
+      if (this.activeContract !== null && this.fheInitialized) {
         try {
           this.showSend = false;
-          this.transferring = true;  
+          this.transferring = true;
           var tx = null as ethers.TransactionResponse | null;
           if (this.enableEncryption) {
             this.info = "Token Transfer; Encrypting amount...";
             console.log("Encrypting amount...");
             console.log(typeof amount);
             console.log(amount);
-            let sendAmount = (await this.fheClient.encrypt_uint32(amount)).data;
-            const inEuint32Amount = {
-              data: `0x${Array.from(sendAmount).map(b => b.toString(16).padStart(2, '0')).join('')}`
+
+            // Use new SDK encryptInputs API
+            const encryptResult = await fhe.encryptInputs([Encryptable.uint32(amount)]).encrypt();
+            if (!encryptResult.success) {
+              throw new Error("Encryption failed");
             }
+            const [encryptedAmount] = encryptResult.data;
+
             this.info = "Token Transfer; Sending transaction...";
             console.log("Token Transfer; Sending transaction...");
-            tx = await this.activeContract.transferEncrypted(recipient, inEuint32Amount);
+            tx = await this.activeContract.transferEncrypted(recipient, encryptedAmount);
           } else {
             this.info = "Token Transfer; Sending transaction...";
             tx = await this.activeContract.transfer(recipient, amount);

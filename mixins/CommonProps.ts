@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue';
-import { LuxFHEClient } from "luxfhejs";
+import type { Permit } from "@luxfhe/sdk/web";
 import { ethers } from "ethers";
 
 
@@ -8,7 +8,8 @@ export default defineComponent({
   },
   data() {
     return {
-      fheClient: null as LuxFHEClient | null,
+      fhePermit: null as Permit | null,
+      fheInitialized: false,
       activeContract: null as ethers.Contract | null,
 
     }

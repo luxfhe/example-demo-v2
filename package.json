@@ -26,7 +26,7 @@
     "@takuma-ru/vue-swipe-modal": "^5.0.1",
     "axios": "^1.6.7",
     "ethers": "^6.10.0",
-    "luxfhejs": "^0.1.0-beta.5",
+    "@luxfhe/sdk": "^0.5.1",
     "material-design-icons-iconfont": "^6.7.0",
     "qrcode.vue": "^3.4.1",
     "sass": "^1.70.0",

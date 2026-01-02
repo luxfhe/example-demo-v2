@@ -1,5 +1,5 @@
 import appConfig from "../config/appConfig.json";
-import { getPermit } from "luxfhejs";
+import { fhe } from "@luxfhe/sdk/web";
 import { defineComponent } from 'vue';
 import CommonProps from '@/mixins/CommonProps'
 import { ethers } from "ethers";
@@ -24,20 +24,39 @@ export default defineComponent({
   methods: {
     async getFHETokenBalance(provider: ethers.BrowserProvider, address: string) : Promise<number> {
       try {
-        if (this.fheClient !== null && this.activeContract !== null) {
-          let permit = await getPermit(appConfig.ENC_ERC20_CONTRACT, provider);
-          this.fheClient.storePermit(permit);
-         
-          const encryptedBalance = await this.activeContract.balanceOfEncrypted(this.fheClient.extractPermitPermission(permit));
-          const balance = this.fheClient.unseal(appConfig.ENC_ERC20_CONTRACT, encryptedBalance).toString();
+        if (this.fheInitialized && this.activeContract !== null) {
+          // Get permit using new SDK API
+          const permitResult = fhe.getPermit(appConfig.ENC_ERC20_CONTRACT);
+          if (!permitResult.success || !permitResult.data) {
+            console.log("No permit found");
+            return 0;
+          }
+          const permit = permitResult.data;
+
+          // Get permission from permit
+          const permissionResult = fhe.getPermission(permit.getHash());
+          if (!permissionResult.success || !permissionResult.data) {
+            console.log("No permission found");
+            return 0;
+          }
+
+          const encryptedBalance = await this.activeContract.balanceOfEncrypted(permissionResult.data);
+
+          // Unseal using new SDK API
+          const unsealResult = await fhe.unseal(appConfig.ENC_ERC20_CONTRACT, encryptedBalance);
+          if (!unsealResult.success) {
+            console.log("Unseal failed");
+            return 0;
+          }
+          const balance = unsealResult.data.toString();
           return Number(balance);
-  
+
         }
       } catch (err) {
         console.log(err);
       }
       return 0;
-    }, 
+    },
 
     async getCoins(address: string): Promise<any> {
       try {
